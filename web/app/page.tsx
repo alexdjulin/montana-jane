@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DirectorSession } from "@/app/lib/director";
 import { captureFrame, uploadFrame } from "@/app/lib/capture";
+import { startRecording, type Recording } from "@/app/lib/recorder";
 import { EMPTY_SLOTS, ITEMS } from "@/app/lib/items";
 import { detectPickup, SCENE_LOOKABLES } from "@/app/lib/look";
 import {
@@ -100,6 +101,12 @@ export default function Page() {
    * The text is already on screen by then, so the voice arrives late enough to
    * work against the exchange rather than with it.
    */
+  const [recording, setRecording] = useState(false);
+  const [savingRec, setSavingRec] = useState(false);
+  const recorderRef = useRef<Recording | null>(null);
+  /** Set once toggleRecording exists; stop() is declared earlier than it. */
+  const toggleRecRef = useRef<() => void>(() => {});
+
   const [voiceOn, setVoiceOn] = useState(false);
   const voiceRef = useRef(false);
   useEffect(() => {
@@ -332,6 +339,8 @@ export default function Page() {
   }, [handleMessage, loadOpeningFrame, pollCredit, say]);
 
   const stop = useCallback(() => {
+    // finish and save any recording before the stream goes away
+    if (recorderRef.current) toggleRecRef.current();
     directorRef.current?.close();
     directorRef.current = null;
     setStatus("idle");
@@ -343,6 +352,58 @@ export default function Page() {
     // billing lags a moment behind the stream closing
     setTimeout(() => void pollCredit(), 3000);
   }, [pollCredit, say]);
+
+  /**
+   * Record the live stream to a file.
+   *
+   * Only the model's output is captured — the video and its audio — not the
+   * bubbles and inventory drawn over it. Recording the DOM as well would mean
+   * compositing every frame onto a canvas in JavaScript, which is exactly the
+   * cost worth avoiding while the game is running.
+   */
+  const toggleRecording = useCallback(async () => {
+    if (recorderRef.current) {
+      const rec = recorderRef.current;
+      recorderRef.current = null;
+      setRecording(false);
+      setSavingRec(true);
+      try {
+        const blob = await rec.stop();
+        const res = await fetch("/api/recording", {
+          method: "POST",
+          headers: { "Content-Type": blob.type || "video/webm" },
+          body: blob,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+        const mb = (data.bytes / 1_000_000).toFixed(1);
+        say("ok", `Recording saved (${mb} MB) — see the gallery.`);
+      } catch (e) {
+        say("err", `Could not save recording: ${describe(e)}`);
+      } finally {
+        setSavingRec(false);
+      }
+      return;
+    }
+
+    const stream = videoRef.current?.srcObject;
+    if (!(stream instanceof MediaStream)) {
+      say("warn", "Nothing to record yet — start the scene first.");
+      return;
+    }
+
+    try {
+      recorderRef.current = startRecording(stream);
+      setRecording(true);
+      say("ok", "Recording the stream.");
+    } catch (e) {
+      say("err", `Could not start recording: ${describe(e)}`);
+    }
+  }, [say]);
+
+  useEffect(() => {
+    toggleRecRef.current = () => void toggleRecording();
+  }, [toggleRecording]);
 
   /** Play one line aloud, if voices are on. Never blocks the bubble. */
   const playVoice = useCallback(
@@ -642,6 +703,8 @@ export default function Page() {
           );
         })}
 
+        {recording && <div className="reclight">● REC</div>}
+
         {mutedFallback && (
           <button
             className="unmute"
@@ -737,6 +800,17 @@ export default function Page() {
         <button className="btn" type="submit" disabled={!started || !input.trim()}>
           {pending !== null ? "…" : "Send"}
         </button>
+        {started && (
+          <button
+            className={`btn rec${recording ? " on" : ""}`}
+            type="button"
+            onClick={() => void toggleRecording()}
+            disabled={savingRec}
+            title="Record the live stream to a file"
+          >
+            {savingRec ? "Saving…" : recording ? "■ Rec" : "● Rec"}
+          </button>
+        )}
         {started && (
           <button className="btn ghost" type="button" onClick={stop}>
             Stop
