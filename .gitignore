@@ -7,3 +7,21 @@ __pycache__/
 .venv
 uv.lock
 .DS_Store
+
+# secrets — FAL_KEY lives here, never commit
+.env
+.env.local
+.env*.local
+
+# node / next
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/public/generated/
+
+# build artefacts
+*.tsbuildinfo
+
+# local reference art — copyrighted third-party material, not ours to publish
+design/
