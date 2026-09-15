@@ -6,7 +6,7 @@ A live-generated point-and-click adventure. One screen: a video frame that strea
 continuous cinematic scene, and a text box underneath. Whatever you type steers the
 scene while it plays. Nothing is pre-rendered — the world is generated as you play it.
 
-![The game](docs/screenshot.png)
+![The game](media/ui_screenshot.png)
 
 Montana Jane is an archaeologist in a torchlit jungle temple, with a monkey, a parrot,
 a snake, a temple keeper and a merchant for company.
@@ -14,7 +14,7 @@ a snake, a temple keeper and a merchant for company.
 The opening frame is generated before the stream starts, then pinned as the video's
 exact first frame so there is no cut between the two:
 
-![Opening scene](docs/opening-scene.png)
+![Opening scene](media/opening_scene.png)
 
 ## Running it
 
