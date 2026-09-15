@@ -7,8 +7,14 @@ import { composeDirection, IDLE_PROMPT, OPENING_SCENE_PROMPT } from "./scene";
 
 export const DIRECTOR_ENDPOINT = "minimax/h3-max/director";
 
-/** Seconds of silence before Jane is told to settle into a calm idle. */
+/** Quiet time before Jane is told to settle into a calm idle. */
 export const IDLE_AFTER_MS = 8000;
+
+/**
+ * How often the idle is re-asserted while the player is not directing.
+ * Chunks are 10s, so this re-anchors every couple of chunks.
+ */
+export const IDLE_HOLD_EVERY_MS = 25000;
 
 export type DirectorEvents = {
   onMedia: (stream: MediaStream) => void;
@@ -16,6 +22,14 @@ export type DirectorEvents = {
   onError: (error: unknown) => void;
   /** A parsed server message. */
   onMessage: (msg: Record<string, unknown>) => void;
+  /**
+   * Every prompt actually sent to the model, and why.
+   *
+   * Exists so it is visible in the UI what causes generation. The stream runs
+   * continuously either way, which makes it easy to blame a click for a change
+   * the model produced on its own.
+   */
+  onSteer: (trigger: "opening" | "send" | "idle") => void;
 };
 
 /**
@@ -32,7 +46,6 @@ export class DirectorSession {
   private session: ManagedRealtimeSession<WmaRealtimeSession> | null = null;
   private version = 0;
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
-  private idleSent = false;
   private closed = false;
 
   constructor(private readonly events: DirectorEvents) {}
@@ -87,6 +100,7 @@ export class DirectorSession {
       // and the cut from the still to the stream is visible.
       ...(this.imageUrl ? { image_url: this.imageUrl } : {}),
     });
+    this.events.onSteer("opening");
     this.armIdle();
   }
 
@@ -111,29 +125,38 @@ export class DirectorSession {
       replan: true,
       ...(endImageUrl ? { end_image_url: endImageUrl } : {}),
     });
-    this.idleSent = false;
+    this.events.onSteer("send");
     this.armIdle();
     return this.version;
   }
 
   /**
-   * After a quiet spell, nudge Jane into a waiting loop so the scene does not
-   * drift off on the last direction. Sent once per quiet spell, never repeatedly.
+   * Hold Jane in a waiting loop between directions.
+   *
+   * The stream does not pause — the model keeps generating a chunk every ten
+   * seconds whatever the player does, and with no new instruction it continues
+   * on the last one, which is how she ends up wandering off across the hall.
+   * Re-asserting a calm idle keeps her put. Repeated rather than one-shot,
+   * because a single nudge only holds for a chunk or two, but spaced well
+   * apart so it is a hold and not a stream of instructions.
    */
   private armIdle() {
     if (this.idleTimer) clearTimeout(this.idleTimer);
-    this.idleTimer = setTimeout(() => {
-      if (this.closed || this.idleSent) return;
-      this.idleSent = true;
-      this.version += 1;
-      this.send({
-        type: "prompt",
-        prompt_version: this.version,
-        prompt: composeDirection(IDLE_PROMPT),
-        replan: false,
-      });
-      this.events.onMessage({ type: "__idle_sent", prompt_version: this.version });
-    }, IDLE_AFTER_MS);
+    this.idleTimer = setTimeout(() => this.holdIdle(), IDLE_AFTER_MS);
+  }
+
+  private holdIdle() {
+    if (this.closed) return;
+    this.version += 1;
+    this.send({
+      type: "prompt",
+      prompt_version: this.version,
+      prompt: composeDirection(IDLE_PROMPT),
+      replan: false,
+    });
+    this.events.onSteer("idle");
+    // keep holding until the player sends something
+    this.idleTimer = setTimeout(() => this.holdIdle(), IDLE_HOLD_EVERY_MS);
   }
 
   private send(message: object) {
