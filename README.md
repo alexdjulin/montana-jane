@@ -60,6 +60,7 @@ and the fal proxy, and never reaches the browser. A `.env` file at the repo root
 - **Inventory** — click an item to have Jane use it.
 - **lock frame** — optional, slower, tighter continuity. See below.
 - **● Rec** — record the live stream to a file. It lands in the gallery when you stop.
+- **music / voices** — ambience loops continuously; voices duck it rather than stopping it.
 - **/gallery** — everything generated so far, with the prompt behind each one.
 
 ## How it works
@@ -73,6 +74,7 @@ Everything runs on [fal](https://fal.ai) with one key.
 | Keyframes | [`fal-ai/nano-banana-pro/edit`](https://fal.ai/models/fal-ai/nano-banana-pro/edit) |
 | NPC dialogue, Look At lines | [`google/gemini-2.5-flash`](https://fal.ai/models/openrouter/router) via fal's OpenRouter router |
 | Voices | [`fal-ai/minimax/speech-2.8-turbo`](https://fal.ai/models/fal-ai/minimax/speech-2.8-turbo) |
+| Ambience loop | [`fal-ai/stable-audio-3`](https://fal.ai/models/fal-ai/stable-audio-3/small/music/text-to-audio) — generated once, committed |
 
 The director is a **realtime WebRTC** model, not a request/response one. A session opens
 with a `configure` message and then streams 10-second chunks continuously; `prompt`

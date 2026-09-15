@@ -40,6 +40,17 @@ const LOOK =
  * The model happily paints fake game chrome — hearts, an inventory bar, subtitles —
  * which collides with our own UI. Say no explicitly.
  */
+/**
+ * The scene's own soundtrack is a generated ambience loop that plays continuously
+ * in the page, so the model must supply diegetic sound only. Left to itself it
+ * scores the video, and its music starts and stops with each chunk — which is
+ * what made the audio come and go.
+ */
+const SOUND =
+  "Diegetic sound only: crackling torches, footsteps on stone, distant dripping water, " +
+  "birds and animal calls, faint wind through the temple. " +
+  "No music, no soundtrack, no score, no singing, no instruments of any kind.";
+
 const NO_HUD =
   "Clean cinematic frame with no interface: no HUD, no health bar, no hearts, no inventory bar, " +
   "no icons, no subtitles, no captions, no text or lettering anywhere in the image.";
@@ -51,7 +62,7 @@ export const OPENING_FRAME_PROMPT =
 /** Prompt for the H3 realtime session (`configure`). */
 export const OPENING_SCENE_PROMPT =
   `A continuous cinematic third-person adventure. ${CAST} ${SETTING} ` +
-  `Slow tracking camera. ${LOOK} ${NO_HUD}`;
+  `Slow tracking camera. ${LOOK} ${NO_HUD} ${SOUND}`;
 
 /** Sent once after a few idle seconds so Jane waits naturally instead of drifting. */
 export const IDLE_PROMPT =
@@ -87,7 +98,7 @@ export function composeDirection(direction: string): string {
     `${CONTINUITY} ` +
     `Now, as one clear continuous beat of action: ${said}. ` +
     `Montana Jane performs this visibly and deliberately, staying in frame. ` +
-    `${LOOK} ${NO_HUD}`
+    `${LOOK} ${NO_HUD} ${SOUND}`
   );
 }
 
