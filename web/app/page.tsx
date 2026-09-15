@@ -92,9 +92,16 @@ export default function Page() {
   const [inspecting, setInspecting] = useState<string | null>(null);
   /** Scene things Jane is now carrying. They leave the scene and join the bag. */
   const [carried, setCarried] = useState<string[]>([]);
-  /** Speak dialogue aloud. Only ever on Say — never on an action. */
-  const [voiceOn, setVoiceOn] = useState(true);
-  const voiceRef = useRef(true);
+  /**
+   * Speak dialogue aloud. Only ever on Say — never on an action.
+   *
+   * Off by default: the TTS model takes ~2.4s and the audio another ~0.6s to
+   * fetch, which lands the reply about five seconds after the line appears.
+   * The text is already on screen by then, so the voice arrives late enough to
+   * work against the exchange rather than with it.
+   */
+  const [voiceOn, setVoiceOn] = useState(false);
+  const voiceRef = useRef(false);
   useEffect(() => {
     voiceRef.current = voiceOn;
   }, [voiceOn]);
