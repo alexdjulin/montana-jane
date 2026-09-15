@@ -223,10 +223,6 @@ export default function Page() {
           setPending(null);
           break;
 
-        case "__idle_sent":
-          say("info", "Idle — Jane waits in the temple.");
-          break;
-
         default:
           say("info", `${type}${msg.reason ? `: ${String(msg.reason)}` : ""}`);
       }
@@ -303,6 +299,17 @@ export default function Page() {
         say("err", `Session error: ${describe(error)}`);
       },
       onMessage: handleMessage,
+      onSteer: (trigger) => {
+        // Make the expensive verb visible: the log now names every prompt that
+        // reaches the model, so nothing can quietly cause generation.
+        const why =
+          trigger === "send"
+            ? "Video: new direction sent (Send)."
+            : trigger === "opening"
+              ? "Video: opening scene configured."
+              : "Video: holding idle (no direction — the stream never pauses).";
+        say(trigger === "idle" ? "info" : "ok", why);
+      },
     });
 
     directorRef.current = director;
