@@ -92,6 +92,12 @@ export default function Page() {
   const [inspecting, setInspecting] = useState<string | null>(null);
   /** Scene things Jane is now carrying. They leave the scene and join the bag. */
   const [carried, setCarried] = useState<string[]>([]);
+  /** Speak dialogue aloud. Only ever on Say — never on an action. */
+  const [voiceOn, setVoiceOn] = useState(true);
+  const voiceRef = useRef(true);
+  useEffect(() => {
+    voiceRef.current = voiceOn;
+  }, [voiceOn]);
 
   const directorRef = useRef<DirectorSession | null>(null);
 
@@ -331,6 +337,26 @@ export default function Page() {
     setTimeout(() => void pollCredit(), 3000);
   }, [pollCredit, say]);
 
+  /** Play one line aloud, if voices are on. Never blocks the bubble. */
+  const playVoice = useCallback(
+    async (who: SpeakerId, text: string) => {
+      if (!voiceRef.current) return;
+      try {
+        const res = await fetch("/api/voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ speaker: who, text }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+        await new Audio(data.url).play();
+      } catch (e) {
+        say("warn", `Voice failed: ${describe(e)}`);
+      }
+    },
+    [say],
+  );
+
   /**
    * One exchange: Jane says a line, an NPC answers once, both fade.
    *
@@ -351,6 +377,7 @@ export default function Page() {
       setTalking(true);
       setInput("");
       say("you", `Jane: ${line}`);
+      void playVoice("jane", line);
 
       try {
         // The LLM answers in about a second, which lands the reply on top of
@@ -370,6 +397,7 @@ export default function Page() {
 
         setBubbles((prev) => [...prev, { who: to, label: data.label, line: data.line }]);
         say("ok", `${data.label}: ${data.line}`);
+        void playVoice(to, data.line);
       } catch (e) {
         say("err", `Dialogue failed: ${describe(e)}`);
       } finally {
@@ -378,7 +406,7 @@ export default function Page() {
         bubbleTimerRef.current = setTimeout(() => setBubbles([]), 9000);
       }
     },
-    [say],
+    [playVoice, say],
   );
 
   /**
@@ -405,6 +433,7 @@ export default function Page() {
         if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
         setBubbles([{ who: "jane", label: SPEAKERS.jane.label, line: data.line }]);
         say("you", `Jane: ${data.line}`);
+        void playVoice("jane", data.line);
         bubbleTimerRef.current = setTimeout(() => setBubbles([]), 9000);
       } catch (e) {
         say("err", `Look failed: ${describe(e)}`);
@@ -412,7 +441,7 @@ export default function Page() {
         setInspecting(null);
       }
     },
-    [inspecting, say],
+    [inspecting, playVoice, say],
   );
 
   const send = useCallback(
@@ -718,6 +747,15 @@ export default function Page() {
           lock frame
         </label>
         <span className="note">{lockFrame ? "+$0.04 · slower, tighter" : "words only · fast"}</span>
+
+        <label className="toggle" title="Speak dialogue aloud with a fixed voice per character">
+          <input
+            type="checkbox"
+            checked={voiceOn}
+            onChange={(e) => setVoiceOn(e.target.checked)}
+          />
+          voices
+        </label>
         <span>try:</span>
         {TEST_INPUTS.map((t) => (
           <button key={t} className="chip" disabled={!started} onClick={() => void send(t)}>

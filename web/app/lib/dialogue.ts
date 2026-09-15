@@ -23,17 +23,24 @@ export type Speaker = {
   at: { x: number; y: number };
   /** How the LLM should voice them. */
   voice: string;
+  /**
+   * Preset TTS voice. A fixed id per character, so a speaker sounds the same
+   * every single time — a generated or randomised voice would not.
+   */
+  voiceId: string;
 };
 
 export const SPEAKERS: Record<SpeakerId, Speaker> = {
   jane: {
     id: "jane",
+    voiceId: "Calm_Woman",
     label: "Jane",
     at: { x: 50, y: 36 },
     voice: "Montana Jane, the player's archaeologist: dry, unbothered, deadpan.",
   },
   merchant: {
     id: "merchant",
+    voiceId: "Friendly_Person",
     label: "Merchant",
     at: { x: 86, y: 36 },
     voice:
@@ -42,6 +49,7 @@ export const SPEAKERS: Record<SpeakerId, Speaker> = {
   },
   keeper: {
     id: "keeper",
+    voiceId: "Patient_Man",
     label: "Keeper",
     at: { x: 61, y: 40 },
     voice:
@@ -50,18 +58,21 @@ export const SPEAKERS: Record<SpeakerId, Speaker> = {
   },
   monkey: {
     id: "monkey",
+    voiceId: "Lively_Girl",
     label: "Monkey",
     at: { x: 9, y: 18 },
     voice: "A small brown monkey on a pillar. Speaks in short smug chirps. Steals things.",
   },
   parrot: {
     id: "parrot",
+    voiceId: "Exuberant_Girl",
     label: "Parrot",
     at: { x: 62, y: 12 },
     voice: "A scarlet parrot overhead. Repeats things wrong, confidently.",
   },
   snake: {
     id: "snake",
+    voiceId: "Elegant_Man",
     label: "Snake",
     at: { x: 27, y: 66 },
     voice: "An emerald snake on the floor. Sibilant, anxious, deeply unimpressed.",
