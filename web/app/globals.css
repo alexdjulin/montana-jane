@@ -626,3 +626,23 @@ a.pill:hover { border-color: var(--torch-dim); color: var(--torch); }
 
 /* a slot holding something taken from the scene */
 .slot.taken { border-color: var(--torch-dim); }
+
+/* ---- recording --------------------------------------------------------- */
+.btn.rec { border-color: var(--edge); color: var(--muted); }
+.btn.rec:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); }
+.btn.rec.on { border-color: var(--bad); color: var(--bad); background: rgba(212, 97, 78, 0.12); }
+
+.reclight {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(13, 11, 10, 0.78);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  animation: pulse 1.6s ease-in-out infinite;
+}

@@ -51,6 +51,7 @@ and the fal proxy, and never reaches the browser. A `.env` file at the repo root
   bubbles above the characters.
 - **Inventory** — click an item to have Jane use it.
 - **lock frame** — optional, slower, tighter continuity. See below.
+- **● Rec** — record the live stream to a file. It lands in the gallery when you stop.
 - **/gallery** — everything generated so far, with the prompt behind each one.
 
 ## How it works
@@ -92,6 +93,10 @@ first generated still arrived with a fake inventory bar and subtitles baked in.
 - Generated media is written to `web/public/generated/` and reused on later runs, keyed by
   a hash of its prompt, so nothing is billed twice. `manifest.jsonl` records the prompt
   behind every file.
+- Recording uses `MediaRecorder` on the WebRTC stream, so the browser encodes it in native
+  code with no per-frame work. It captures the model's video and audio, not the dialogue
+  bubbles and inventory drawn over them — compositing those would mean redrawing every
+  frame through a canvas in JavaScript, which is the cost worth avoiding mid-game.
 - Chunks are a fixed 10 seconds. The 5–15s range the API mentions is only reachable
   through `script` beats, not on a live session.
 - Sessions run up to about 15 minutes, then end with `stream_exhausted` and hold the last
