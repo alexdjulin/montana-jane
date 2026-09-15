@@ -107,6 +107,9 @@ export default function Page() {
   /** Set once toggleRecording exists; stop() is declared earlier than it. */
   const toggleRecRef = useRef<() => void>(() => {});
 
+  const [musicOn, setMusicOn] = useState(true);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+
   const [voiceOn, setVoiceOn] = useState(false);
   const voiceRef = useRef(false);
   useEffect(() => {
@@ -149,6 +152,39 @@ export default function Page() {
       live = false;
     };
   }, []);
+
+  /**
+   * The ambience loop.
+   *
+   * Lives in the page, not in the generated video: the model's own music starts
+   * and stops with every ten-second chunk, which is why the score kept cutting
+   * out. This plays continuously from the first click and is never stopped —
+   * voices and the stream's diegetic sound layer on top of it.
+   *
+   * Created once and reused, so a re-render never restarts the track.
+   */
+  useEffect(() => {
+    const audio = new Audio("/audio/temple-ambience.mp3");
+    audio.loop = true;
+    audio.volume = 0.32;
+    musicRef.current = audio;
+    return () => {
+      audio.pause();
+      musicRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = musicRef.current;
+    if (!audio) return;
+    if (musicOn) {
+      // browsers block audio until the page has been interacted with; the first
+      // click on Begin satisfies that, and this retries harmlessly before then
+      void audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  }, [musicOn]);
 
   // keep the log pinned to the newest line
   useEffect(() => {
@@ -278,6 +314,7 @@ export default function Page() {
     setElapsed(0);
     setSpent(0);
     setVideoLive(false);
+    if (musicOn) void musicRef.current?.play().catch(() => {});
     // baseline the balance so the pill can show what this session costs
     const before = await pollCredit();
     startCreditRef.current = before;
@@ -336,7 +373,7 @@ export default function Page() {
 
     directorRef.current = director;
     director.open(anchor);
-  }, [handleMessage, loadOpeningFrame, pollCredit, say]);
+  }, [handleMessage, loadOpeningFrame, musicOn, pollCredit, say]);
 
   const stop = useCallback(() => {
     // finish and save any recording before the stream goes away
@@ -417,7 +454,17 @@ export default function Page() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
-        await new Audio(data.url).play();
+
+        // duck the ambience rather than stopping it, so a line sits on top
+        const music = musicRef.current;
+        const full = music?.volume ?? 0;
+        if (music) music.volume = full * 0.35;
+
+        const speech = new Audio(data.url);
+        speech.onended = () => {
+          if (music) music.volume = full;
+        };
+        await speech.play();
       } catch (e) {
         say("warn", `Voice failed: ${describe(e)}`);
       }
@@ -828,6 +875,15 @@ export default function Page() {
           lock frame
         </label>
         <span className="note">{lockFrame ? "+$0.04 · slower, tighter" : "words only · fast"}</span>
+
+        <label className="toggle" title="Temple ambience, looping continuously">
+          <input
+            type="checkbox"
+            checked={musicOn}
+            onChange={(e) => setMusicOn(e.target.checked)}
+          />
+          music
+        </label>
 
         <label className="toggle" title="Speak dialogue aloud with a fixed voice per character">
           <input
