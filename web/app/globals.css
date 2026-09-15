@@ -1,0 +1,537 @@
+:root {
+  --bg: #0d0b0a;
+  --panel: #17130f;
+  --edge: #3a2d20;
+  --torch: #e8a33d;
+  --torch-dim: #8a6329;
+  --text: #ede4d6;
+  --muted: #9a8b78;
+  --ok: #7fb069;
+  --warn: #e0b341;
+  --bad: #d4614e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+}
+
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-block: 24px;
+  padding-inline: 16px;
+}
+
+/* ---- header ---------------------------------------------------------- */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--torch);
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+.dot.live   { background: var(--ok);   box-shadow: 0 0 8px var(--ok); }
+.dot.warn   { background: var(--warn); }
+.dot.bad    { background: var(--bad); }
+.dot.idle   { background: var(--torch-dim); }
+
+.pill b { color: var(--text); font-weight: 600; }
+.pill.alarm { border-color: var(--bad); color: var(--bad); }
+.pill.alarm b { color: var(--bad); }
+
+/* ---- video frame ----------------------------------------------------- */
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  background: #000;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px #000 inset, 0 18px 50px -20px #000;
+}
+
+.frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* retro near-pixel finish: upscale a downscaled frame with no smoothing */
+  image-rendering: pixelated;
+}
+
+/* scanline veil, purely cosmetic */
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.16) 0px,
+    rgba(0, 0, 0, 0.16) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.5;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding-inline: 24px;
+  color: var(--muted);
+}
+
+.placeholder .big {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--torch-dim);
+}
+
+.btn {
+  font: inherit;
+  padding: 9px 18px;
+  border-radius: 3px;
+  border: 1px solid var(--torch-dim);
+  background: var(--panel);
+  color: var(--torch);
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.btn:hover:not(:disabled) { border-color: var(--torch); background: #201a13; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.ghost { border-color: var(--edge); color: var(--muted); }
+.btn.ghost:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); background: var(--panel); }
+
+/* ---- input ----------------------------------------------------------- */
+form.steer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+form.steer input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  padding: 11px 14px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 3px;
+  color: var(--text);
+}
+form.steer input::placeholder { color: #6b5d4c; }
+form.steer input:focus {
+  outline: none;
+  border-color: var(--torch-dim);
+  box-shadow: 0 0 0 1px var(--torch-dim);
+}
+form.steer input:disabled { opacity: 0.5; }
+
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  align-items: center;
+}
+.hints span { color: var(--muted); font-size: 12px; margin-right: 2px; }
+.chip {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px dashed var(--edge);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chip:hover:not(:disabled) { border-style: solid; border-color: var(--torch-dim); color: var(--torch); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- log ------------------------------------------------------------- */
+.log {
+  margin-top: 18px;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+  max-height: 210px;
+  overflow-y: auto;
+}
+.log h2 {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--edge);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+.log ul { list-style: none; margin: 0; padding: 6px 0; }
+.log li {
+  display: flex;
+  gap: 10px;
+  padding: 3px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  align-items: baseline;
+}
+.log time { color: #6b5d4c; flex: none; font-variant-numeric: tabular-nums; }
+.log .msg { word-break: break-word; }
+.log li.err  .msg { color: var(--bad); }
+.log li.warn .msg { color: var(--warn); }
+.log li.ok   .msg { color: var(--ok); }
+.log li.you  .msg { color: var(--torch); }
+.log .empty { padding: 12px; color: #6b5d4c; font-size: 12px; }
+
+@media (max-width: 560px) {
+  .bar { gap: 8px; }
+  .title { flex-basis: 100%; }
+}
+
+/* opening still — sits under the video until the stream paints */
+.frame .still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  transition: opacity 600ms ease;
+}
+.frame .still.hidden { opacity: 0; }
+
+/* the video is transparent until it has real frames, so the still shows through */
+.frame video.blank { opacity: 0; }
+
+.placeholder .big { text-shadow: 0 2px 12px #000; }
+
+/* ---- gallery ---------------------------------------------------------- */
+.empty-note { color: var(--muted); }
+
+.gallery { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.gallery > li {
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.gallery img,
+.gallery video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: #000;
+}
+.gallery .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 12px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.gallery .kind {
+  color: var(--torch);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.gallery .prompt {
+  margin: 6px 0 0;
+  padding: 0 12px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+a.pill { text-decoration: none; }
+a.pill:hover { border-color: var(--torch-dim); color: var(--torch); }
+
+/* ---- generation feedback ---------------------------------------------- */
+/* H3 renders in ~10s chunks; without this the frame just looks frozen. */
+.working {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(13, 11, 10, 0.82);
+  border: 1px solid var(--torch-dim);
+  color: var(--torch);
+  font-size: 12px;
+  max-width: calc(100% - 24px);
+  backdrop-filter: blur(3px);
+}
+.working span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.working .bead {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--torch);
+  flex: none;
+  animation: pulse 1.1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+
+.chunkcount {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(13, 11, 10, 0.72);
+  border: 1px solid var(--edge);
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working .bead { animation: none; opacity: 0.9; }
+}
+
+.unmute {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font: inherit;
+  font-size: 11px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--torch-dim);
+  background: rgba(13, 11, 10, 0.82);
+  color: var(--torch);
+  cursor: pointer;
+}
+.unmute:hover { border-color: var(--torch); }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  margin-right: 4px;
+}
+.toggle:hover { border-color: var(--torch-dim); color: var(--torch); }
+.toggle input { accent-color: var(--torch); margin: 0; }
+
+.hints .note { color: #6b5d4c; font-size: 11px; }
+
+/* ---- dialogue ---------------------------------------------------------
+   Drawn over the video rather than generated into it: the model cannot render
+   legible text, and a bubble needs no timing. Anchored to each character's
+   position from the scene bible, so lines sit above the right head. */
+.bubble {
+  position: absolute;
+  /* wide enough for a short reply to sit on one or two lines, never more */
+  width: max-content;
+  max-width: min(46ch, 52%);
+  padding: 7px 12px;
+  border-radius: 4px;
+  background: rgba(13, 11, 10, 0.88);
+  border: 1px solid var(--torch-dim);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  pointer-events: none;
+  animation: pop 180ms ease-out;
+  box-shadow: 0 6px 22px -8px #000;
+  overflow-wrap: break-word;
+
+  /* hard ceiling of two lines, so a long reply can never grow out of the frame */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* A bubble centred on a character near the frame edge would be clipped, so the
+   nearest edge is anchored and the bubble grows inward instead. */
+.bubble.at-center { transform: translate(-50%, -100%); }
+.bubble.at-left,
+.bubble.at-right { transform: translate(0, -100%); }
+
+/* the little tail, kept under the character rather than under the bubble centre */
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  background: rgba(13, 11, 10, 0.88);
+  border-right: 1px solid var(--torch-dim);
+  border-bottom: 1px solid var(--torch-dim);
+  transform: rotate(45deg);
+}
+.bubble.at-center::after { left: 50%; margin-left: -4px; }
+.bubble.at-left::after   { left: 18px; }
+.bubble.at-right::after  { right: 18px; }
+
+.bubble b { color: var(--torch); font-weight: 600; }
+.bubble.jane { border-color: var(--torch); }
+.bubble.jane b { color: var(--torch); }
+.bubble.npc { border-color: var(--ok); }
+.bubble.npc b { color: var(--ok); }
+.bubble.jane::after { border-color: var(--torch); }
+.bubble.npc::after  { border-color: var(--ok); }
+
+@keyframes pop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.btn.say { border-color: var(--torch-dim); color: var(--torch); }
+.btn.say:hover:not(:disabled) { border-color: var(--torch); background: #201a13; }
+
+@media (max-width: 560px) {
+  .bubble { font-size: 11px; max-width: 66%; padding: 5px 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation: none; }
+}
+
+/* ---- inventory --------------------------------------------------------
+   Sits outside the video, between the frame and the input: real UI rather
+   than chrome painted into the picture (which is exactly what every prompt
+   forbids the model from doing). */
+.inventory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.slot {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+  overflow: hidden;
+  cursor: pointer;
+  font: inherit;
+  color: var(--muted);
+}
+
+.slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+}
+
+.slot .name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px 4px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--muted);
+  background: linear-gradient(to top, rgba(13, 11, 10, 0.92), transparent);
+}
+
+.slot:hover:not(:disabled) { border-color: var(--torch); }
+.slot:hover:not(:disabled) .name { color: var(--torch); }
+.slot:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* an empty slot is a socket, not a button */
+.slot.empty {
+  cursor: default;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(58, 45, 32, 0.22) 0px,
+    rgba(58, 45, 32, 0.22) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+}
+
+.slot .loading {
+  position: absolute;
+  inset: 0;
+  background: var(--panel);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@media (max-width: 560px) {
+  .slot { width: 56px; height: 56px; }
+}
