@@ -468,9 +468,12 @@ export default function Page() {
 
   return (
     <main className="wrap">
-      <div className="bar">
+      <header className="masthead">
         <h1 className="title">Montana Jane</h1>
+        <p className="tagline">That game you (almost) played as a kid</p>
+      </header>
 
+      <div className="bar">
         <span className="pill">
           <i className={`dot ${STATUS_DOT[status]}`} />
           {STATUS_LABEL[status]}
@@ -498,6 +501,8 @@ export default function Page() {
         </span>
       </div>
 
+      <div className="stage">
+        <div className="pane">
       <div className="frame">
         {/* The opening still sits beneath the video and is revealed until the
             stream paints — that is what keeps the frame from ever going black. */}
@@ -673,6 +678,8 @@ export default function Page() {
         ))}
       </div>
 
+        </div>
+
       <div className="log" ref={logBoxRef}>
         <h2>Session log</h2>
         {log.length === 0 ? (
@@ -687,6 +694,7 @@ export default function Page() {
             ))}
           </ul>
         )}
+      </div>
       </div>
     </main>
   );
