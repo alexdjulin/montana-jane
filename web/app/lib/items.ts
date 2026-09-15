@@ -105,7 +105,7 @@ export const MAX_INSPECT = 90;
 export const EMPTY_SLOTS = 3;
 
 /** Icon prompt — matched to the scene's look so items belong to the same world. */
-export function itemIconPrompt(item: Item): string {
+export function itemIconPrompt(item: { label: string; look: string }): string {
   return (
     `A single game inventory item icon: ${item.look}. ` +
     "Centred, filling most of the frame, seen straight on. " +

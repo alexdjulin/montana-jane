@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DirectorSession } from "@/app/lib/director";
 import { captureFrame, uploadFrame } from "@/app/lib/capture";
 import { EMPTY_SLOTS, ITEMS } from "@/app/lib/items";
-import { SCENE_LOOKABLES } from "@/app/lib/look";
+import { detectPickup, SCENE_LOOKABLES } from "@/app/lib/look";
 import {
   bubbleAlign,
   detectAddressee,
@@ -90,6 +90,8 @@ export default function Page() {
   /** What Jane has already said about each item, so she does not repeat herself. */
   const saidRef = useRef<Record<string, string[]>>({});
   const [inspecting, setInspecting] = useState<string | null>(null);
+  /** Scene things Jane is now carrying. They leave the scene and join the bag. */
+  const [carried, setCarried] = useState<string[]>([]);
 
   const directorRef = useRef<DirectorSession | null>(null);
 
@@ -323,6 +325,7 @@ export default function Page() {
     setVideoLive(false);
     setPending(null);
     setMutedFallback(false);
+    setCarried([]);
     say("info", "Session stopped.");
     // billing lags a moment behind the stream closing
     setTimeout(() => void pollCredit(), 3000);
@@ -465,9 +468,29 @@ export default function Page() {
       if (version === null) {
         say("warn", "Session is not ready yet — give it a moment.");
         setPending(null);
+        return;
+      }
+
+      // Picking something up is a Send like any other — the video shows her
+      // taking it — but it also moves the thing out of the scene and into the
+      // bag, and its icon was generated ahead of time so the slot fills at once.
+      const taken = detectPickup(line);
+      if (taken && !carried.includes(taken.id)) {
+        setCarried((prev) => [...prev, taken.id]);
+        say("ok", `Picked up: ${taken.label}.`);
+        if (!icons[taken.id]) {
+          void fetch(`/api/item?id=${taken.id}`, { cache: "no-store" })
+            .then((r) => r.json())
+            .then((d) => {
+              if (typeof d?.url === "string") {
+                setIcons((prev) => ({ ...prev, [taken.id]: d.url }));
+              }
+            })
+            .catch(() => say("warn", `No icon for ${taken.label} yet.`));
+        }
       }
     },
-    [lockFrame, say, speak],
+    [carried, icons, lockFrame, say, speak],
   );
 
   const started = status !== "idle";
@@ -544,7 +567,7 @@ export default function Page() {
         {/* Look-at hotspots. Describing costs a cheap LLM call and leaves the
             picture alone — only Send generates video. */}
         {started &&
-          SCENE_LOOKABLES.map((l) => (
+          SCENE_LOOKABLES.filter((l) => !carried.includes(l.id)).map((l) => (
             <button
               key={l.id}
               className={`hotspot${inspecting === l.id ? " busy" : ""}`}
@@ -629,7 +652,25 @@ export default function Page() {
           </button>
         ))}
 
-        {Array.from({ length: EMPTY_SLOTS }, (_, i) => (
+        {carried.map((id) => {
+          const l = SCENE_LOOKABLES.find((x) => x.id === id);
+          if (!l) return null;
+          return (
+            <button
+              key={id}
+              className="slot taken"
+              disabled={inspecting !== null}
+              title={`Look at the ${l.label.toLowerCase()}`}
+              onClick={() => void inspect(id)}
+            >
+              {icons[id] ? <img src={icons[id]} alt={l.label} /> : <span className="loading" />}
+              <span className="name">{l.label}</span>
+              {inspecting === id && <span className="busy" />}
+            </button>
+          );
+        })}
+
+        {Array.from({ length: Math.max(0, EMPTY_SLOTS - carried.length) }, (_, i) => (
           <span key={`empty-${i}`} className="slot empty" aria-hidden />
         ))}
       </div>

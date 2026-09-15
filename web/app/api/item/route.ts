@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { IMAGE_MODEL } from "@/app/lib/scene";
 import { ITEMS, itemIconPrompt } from "@/app/lib/items";
+import { SCENE_LOOKABLES } from "@/app/lib/look";
 import { findCached, promptKey, record, saveRemote } from "@/app/lib/assets";
 
 /**
@@ -18,14 +19,20 @@ export async function GET(request: Request) {
   }
 
   const id = new URL(request.url).searchParams.get("id");
-  const item = ITEMS.find((i) => i.id === id);
-  if (!item) return NextResponse.json({ error: `unknown item: ${id}` }, { status: 404 });
 
-  const prompt = itemIconPrompt(item);
+  // an icon is needed both for things she starts with and things she picks up
+  const item = ITEMS.find((i) => i.id === id);
+  const picked = SCENE_LOOKABLES.find((l) => l.id === id && l.pickup);
+  if (!item && !picked) {
+    return NextResponse.json({ error: `unknown item: ${id}` }, { status: 404 });
+  }
+
+  const subject = item ?? { id: picked!.id, label: picked!.label, look: picked!.pickup!.look };
+  const prompt = itemIconPrompt(subject);
   const cacheKey = promptKey(prompt);
 
-  const hit = await findCached(`item-${item.id}`, cacheKey);
-  if (hit) return NextResponse.json({ id: item.id, url: hit.file, cached: true });
+  const hit = await findCached(`item-${subject.id}`, cacheKey);
+  if (hit) return NextResponse.json({ id: subject.id, url: hit.file, cached: true });
 
   try {
     const res = await fetch(`https://fal.run/${IMAGE_MODEL}`, {
@@ -47,17 +54,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "image model returned no image" }, { status: 502 });
     }
 
-    const url = await saveRemote(`item-${item.id}`, cacheKey, remote);
+    const url = await saveRemote(`item-${subject.id}`, cacheKey, remote);
     await record({
       at: new Date().toISOString(),
-      kind: `item-${item.id}`,
+      kind: `item-${subject.id}`,
       file: url,
       remote,
       model: IMAGE_MODEL,
       prompt,
     });
 
-    return NextResponse.json({ id: item.id, url, cached: false });
+    return NextResponse.json({ id: subject.id, url, cached: false });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "item icon failed" },
