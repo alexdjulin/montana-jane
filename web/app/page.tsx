@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DirectorSession } from "@/app/lib/director";
 import { captureFrame, uploadFrame } from "@/app/lib/capture";
 import { EMPTY_SLOTS, ITEMS } from "@/app/lib/items";
+import { SCENE_LOOKABLES } from "@/app/lib/look";
 import {
   bubbleAlign,
   detectAddressee,
@@ -86,6 +87,9 @@ export default function Page() {
 
   /** Item id -> icon path. Generated once, then served from disk. */
   const [icons, setIcons] = useState<Record<string, string>>({});
+  /** What Jane has already said about each item, so she does not repeat herself. */
+  const saidRef = useRef<Record<string, string[]>>({});
+  const [inspecting, setInspecting] = useState<string | null>(null);
 
   const directorRef = useRef<DirectorSession | null>(null);
 
@@ -338,12 +342,6 @@ export default function Page() {
       setInput("");
       say("you", `Jane: ${line}`);
 
-      // let the scene show the exchange, without waiting for it
-      directorRef.current?.steer(
-        `Montana Jane turns to the ${SPEAKERS[to].label.toLowerCase()} and speaks a short line; ` +
-          `the ${SPEAKERS[to].label.toLowerCase()} answers her with a small gesture`,
-      );
-
       try {
         // The LLM answers in about a second, which lands the reply on top of
         // Jane's line before it can be read. Hold the reply until her line has
@@ -371,6 +369,40 @@ export default function Page() {
       }
     },
     [say],
+  );
+
+  /**
+   * Look at an item: Jane remarks on it. No NPC, no scene change — the
+   * point-and-click "look at" verb, not "use".
+   */
+  const inspect = useCallback(
+    async (itemId: string) => {
+      if (inspecting) return;
+      setInspecting(itemId);
+
+      try {
+        const res = await fetch("/api/inspect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId, said: saidRef.current[itemId] ?? [] }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+
+        // remember it, so the next click gets a different angle
+        saidRef.current[itemId] = [...(saidRef.current[itemId] ?? []), data.line].slice(-5);
+
+        if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
+        setBubbles([{ who: "jane", label: SPEAKERS.jane.label, line: data.line }]);
+        say("you", `Jane: ${data.line}`);
+        bubbleTimerRef.current = setTimeout(() => setBubbles([]), 9000);
+      } catch (e) {
+        say("err", `Look failed: ${describe(e)}`);
+      } finally {
+        setInspecting(null);
+      }
+    },
+    [inspecting, say],
   );
 
   const send = useCallback(
@@ -497,6 +529,26 @@ export default function Page() {
           </div>
         )}
 
+        {/* Look-at hotspots. Describing costs a cheap LLM call and leaves the
+            picture alone — only Send generates video. */}
+        {started &&
+          SCENE_LOOKABLES.map((l) => (
+            <button
+              key={l.id}
+              className={`hotspot${inspecting === l.id ? " busy" : ""}`}
+              style={{
+                left: `${l.at.x}%`,
+                top: `${l.at.y}%`,
+                width: `${l.size.w}%`,
+                height: `${l.size.h}%`,
+              }}
+              title={`Look at ${l.label.toLowerCase()}`}
+              aria-label={`Look at ${l.label}`}
+              disabled={inspecting !== null}
+              onClick={() => void inspect(l.id)}
+            />
+          ))}
+
         {bubbles.map((b) => {
           const { x, y } = SPEAKERS[b.who].at;
           const align = bubbleAlign(x);
@@ -551,15 +603,16 @@ export default function Page() {
           <button
             key={item.id}
             className="slot"
-            disabled={!started}
-            title={`Use the ${item.label.toLowerCase()}`}
-            onClick={() => void send(`Montana Jane ${item.use}`)}
+            disabled={inspecting !== null}
+            title={`Look at the ${item.label.toLowerCase()}`}
+            onClick={() => void inspect(item.id)}
           >
             {icons[item.id] ? (
               <img src={icons[item.id]} alt={item.label} />
             ) : (
               <span className="loading" />
             )}
+            {inspecting === item.id && <span className="busy" />}
             <span className="name">{item.label}</span>
           </button>
         ))}
