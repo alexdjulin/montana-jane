@@ -6,6 +6,14 @@ A live-generated point-and-click adventure. One screen: a video frame that strea
 continuous cinematic scene, and a text box underneath. Whatever you type steers the
 scene while it plays. Nothing is pre-rendered — the world is generated as you play it.
 
+Built on [**fal**](https://fal.ai), on a single `FAL_KEY`. The scene is streamed live by
+[**MiniMax H3 Max Director**](https://fal.ai/models/minimax/h3-max/director) — a realtime
+WebRTC video model you direct *while it plays*, rather than a prompt-in, clip-out call.
+Four more fal models fill in the stills, the dialogue and the voices.
+
+Made at the [fal](https://fal.ai) agentic-media hackathon, Berlin, September 2026, from
+the [starter repo](https://github.com/rizavelioglu/aiai-berlin-2026).
+
 ![The game](media/ui_screenshot.png)
 
 Montana Jane is an archaeologist in a torchlit jungle temple, with a monkey, a parrot,
@@ -56,12 +64,15 @@ and the fal proxy, and never reaches the browser. A `.env` file at the repo root
 
 ## How it works
 
+Everything runs on [fal](https://fal.ai) with one key.
+
 | Piece | Model |
 |---|---|
-| Live video | `minimax/h3-max/director` — realtime WebRTC, steerable mid-stream |
-| Opening still, item icons | `fal-ai/nano-banana-2` |
-| Keyframes | `fal-ai/nano-banana-pro/edit` |
-| NPC dialogue | `google/gemini-2.5-flash` via fal's OpenRouter router |
+| Live video | [`minimax/h3-max/director`](https://fal.ai/models/minimax/h3-max/director) — realtime WebRTC, steerable mid-stream |
+| Opening still, item icons | [`fal-ai/nano-banana-2`](https://fal.ai/models/fal-ai/nano-banana-2) |
+| Keyframes | [`fal-ai/nano-banana-pro/edit`](https://fal.ai/models/fal-ai/nano-banana-pro/edit) |
+| NPC dialogue, Look At lines | [`google/gemini-2.5-flash`](https://fal.ai/models/openrouter/router) via fal's OpenRouter router |
+| Voices | [`fal-ai/minimax/speech-2.8-turbo`](https://fal.ai/models/fal-ai/minimax/speech-2.8-turbo) |
 
 The director is a **realtime WebRTC** model, not a request/response one. A session opens
 with a `configure` message and then streams 10-second chunks continuously; `prompt`
@@ -102,9 +113,19 @@ first generated still arrived with a fake inventory bar and subtitles baked in.
 - Sessions run up to about 15 minutes, then end with `stream_exhausted` and hold the last
   frame.
 
+## Links
+
+- [fal](https://fal.ai) — everything here runs on one fal key
+- [H3 Max Director](https://fal.ai/models/minimax/h3-max/director) · [API + AsyncAPI schema](https://fal.ai/models/minimax/h3-max/director/api)
+- [nano-banana-2](https://fal.ai/models/fal-ai/nano-banana-2) · [nano-banana-pro/edit](https://fal.ai/models/fal-ai/nano-banana-pro/edit)
+- [MiniMax Speech 2.8 Turbo](https://fal.ai/models/fal-ai/minimax/speech-2.8-turbo)
+- [fal client setup](https://fal.ai/docs/documentation/model-apis/inference/client-setup) · [proxy setup](https://fal.ai/docs/documentation/model-apis/inference/proxy-setup)
+- [Get a key](https://fal.ai/dashboard/keys)
+
 ## The starter this grew out of
 
-This began as the fal agentic-media hackathon starter (`agent.py`, a Python agent that
-uses fal media models as tools). That is still here and untouched — see
-[`agent.py`](agent.py) — but it is not part of the game: H3 realtime is WebRTC, so the
-game is a browser app with a server proxy rather than a Python `subscribe()` call.
+This began as the [fal agentic-media hackathon starter](https://github.com/rizavelioglu/aiai-berlin-2026)
+(`agent.py`, a Python agent that uses fal media models as tools). That is still here and
+untouched — see [`agent.py`](agent.py) — but it is not part of the game: H3 realtime is
+WebRTC, so the game is a browser app with a server proxy rather than a Python
+`subscribe()` call.
