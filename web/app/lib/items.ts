@@ -11,8 +11,22 @@ export type Item = {
   label: string;
   /** What the icon shows. */
   look: string;
-  /** What Jane does when the player uses it, fed to the director as an action. */
-  use: string;
+  /**
+   * Fixed facts. Jane improvises a different line every time she looks at an item,
+   * but she must never improvise a different STORY — so the canon is authored here
+   * rather than left to the model, which would happily invent a new provenance on
+   * every call. The model riffs; these facts do not move.
+   */
+  canon: {
+    /** What the thing actually is. */
+    what: string;
+    /** Its condition and quirks — the details she can describe differently each time. */
+    looks: string;
+    /** Where she got it. This is the fact that must never change. */
+    from: string;
+    /** The running joke to keep circling back to. */
+    gag: string;
+  };
 };
 
 export const ITEMS: Item[] = [
@@ -20,27 +34,50 @@ export const ITEMS: Item[] = [
     id: "rope",
     label: "Rope",
     look: "a coiled brown hemp rope lasso",
-    use: "takes a coiled rope from her satchel and swings it like a lasso",
+    canon: {
+      what: "Forty feet of hemp rope she insists on calling a lasso.",
+      looks: "Frayed at one end, scorched at the other, knotted in the middle where it snapped once.",
+      from: "Came free with a tent she bought in Marrakesh. She kept the rope and lost the tent.",
+      gag: "She has never once successfully lassoed anything, and will not be taking questions.",
+    },
   },
   {
     id: "phone",
     label: "Phone",
     look: "a modern black smartphone with a glowing screen",
-    use: "pulls a modern smartphone from her pocket and holds it up to take a photo",
+    canon: {
+      what: "A smartphone. In a temple with no signal, for the last nine days.",
+      looks: "Cracked top-left corner, screen permanently at three percent battery.",
+      from: "Left behind by a tourist on a bus outside Cairo. She fully intends to return it.",
+      gag: "One bar appears only when she is somewhere genuinely dangerous.",
+    },
   },
   {
     id: "chicken",
     label: "Chicken",
     look: "a bright yellow rubber chicken toy",
-    use: "produces a bright yellow rubber chicken and waves it around",
+    canon: {
+      what: "A rubber chicken. Squeaks. Yellow, aggressively so.",
+      looks: "One eye rubbed off, beak slightly melted from being left near a campfire.",
+      from: "A leaving present from a colleague who thought it was funny. It was.",
+      gag: "It has solved more archaeological puzzles than her doctorate has.",
+    },
   },
   {
     id: "pearl",
     label: "Pearl",
     look: "a large glowing golden pearl",
-    use: "holds up a large glowing golden pearl, its light filling the hall",
+    canon: {
+      what: "A golden pearl the size of a plum that glows from the inside.",
+      looks: "Warm to the touch, faintly humming, brighter whenever something bad is about to happen.",
+      from: "Prised out of a stone idol two temples ago. The idol did not consent.",
+      gag: "Almost certainly cursed. She is choosing not to think about that.",
+    },
   },
 ];
+
+/** Jane's remarks run a little longer than NPC replies, but still fit two lines. */
+export const MAX_INSPECT = 90;
 
 /** Empty slots, so the bar reads as an inventory rather than a toolbar. */
 export const EMPTY_SLOTS = 3;
