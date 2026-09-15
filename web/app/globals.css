@@ -22,10 +22,49 @@ body {
 }
 
 .wrap {
-  max-width: 1000px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding-block: 24px;
+  padding-block: 22px;
   padding-inline: 16px;
+}
+
+/* ---- masthead ---------------------------------------------------------- */
+.masthead {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.masthead .title {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 52px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--torch);
+  /* torchlight, not a glow effect for its own sake */
+  text-shadow: 0 0 26px rgba(232, 163, 61, 0.28), 0 3px 0 #000;
+}
+
+.masthead .tagline {
+  margin: 8px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ---- two panes ---------------------------------------------------------
+   Video, inventory and input on the left; the session log alongside rather
+   than below, so the frame can take the full width it is given. */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.pane {
+  min-width: 0;
 }
 
 /* ---- header ---------------------------------------------------------- */
@@ -33,11 +72,13 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 14px;
 }
 
-.title {
+/* gallery page keeps the old compact heading */
+.bar .title {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -45,6 +86,7 @@ body {
   color: var(--torch);
   margin: 0;
   flex: 1 1 auto;
+  text-align: left;
 }
 
 .pill {
@@ -199,11 +241,12 @@ form.steer input:disabled { opacity: 0.5; }
 
 /* ---- log ------------------------------------------------------------- */
 .log {
-  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border: 1px solid var(--edge);
   border-radius: 4px;
   background: var(--panel);
-  max-height: 210px;
   overflow-y: auto;
 }
 .log h2 {
@@ -218,7 +261,7 @@ form.steer input:disabled { opacity: 0.5; }
   top: 0;
   background: var(--panel);
 }
-.log ul { list-style: none; margin: 0; padding: 6px 0; }
+.log ul { list-style: none; margin: 0; padding: 6px 0; flex: 1 1 auto; }
 .log li {
   display: flex;
   gap: 10px;
@@ -235,9 +278,17 @@ form.steer input:disabled { opacity: 0.5; }
 .log li.you  .msg { color: var(--torch); }
 .log .empty { padding: 12px; color: #6b5d4c; font-size: 12px; }
 
+/* below this the two panes no longer both fit — stack them */
+@media (max-width: 1080px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .log { max-height: 240px; }
+}
+
 @media (max-width: 560px) {
   .bar { gap: 8px; }
-  .title { flex-basis: 100%; }
+  .bar .title { flex-basis: 100%; }
 }
 
 /* opening still — sits under the video until the stream paints */
