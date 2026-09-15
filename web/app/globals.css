@@ -623,3 +623,6 @@ a.pill:hover { border-color: var(--torch-dim); color: var(--torch); }
 }
 .hotspot:disabled { cursor: progress; }
 .hotspot.busy { cursor: progress; }
+
+/* a slot holding something taken from the scene */
+.slot.taken { border-color: var(--torch-dim); }

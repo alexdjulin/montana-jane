@@ -24,6 +24,17 @@ export type Canon = {
 export type Lookable = {
   id: string;
   label: string;
+  /**
+   * Present if the thing can be picked up. Once carried it leaves the scene
+   * (its hotspot goes) and joins the inventory, so it needs its own icon and
+   * its own canon — a snake in your bag is a different proposition to a snake
+   * on the floor.
+   */
+  pickup?: {
+    /** Icon prompt, in the same style as the other inventory icons. */
+    look: string;
+    canon: Canon;
+  };
   /** Centre of the hotspot, as a percentage of the frame. */
   at: { x: number; y: number };
   /** Hotspot size, as a percentage of the frame. */
@@ -55,6 +66,15 @@ export const SCENE_LOOKABLES: Lookable[] = [
       origin: "It was here first and has made that clear without moving.",
       gag: "You have decided it is friendly. It has decided nothing of the sort.",
     },
+    pickup: {
+      look: "a coiled emerald-green snake with darker green markings, curled up calmly",
+      canon: {
+        what: "The temple snake. In your bag now. This was a joint decision, apparently.",
+        looks: "Coiled tight against the lining, emerald green, still refusing to blink.",
+        origin: "You picked it up off the temple floor. It allowed this.",
+        gag: "It has not objected, which you are choosing to read as consent.",
+      },
+    },
   },
   {
     id: "monkey",
@@ -67,6 +87,15 @@ export const SCENE_LOOKABLES: Lookable[] = [
       origin: "Followed you in three chambers ago. You have stopped questioning it.",
       gag: "It has stolen something of yours and neither of you is mentioning it.",
     },
+    pickup: {
+      look: "a small brown monkey sitting upright, arms folded, looking unimpressed",
+      canon: {
+        what: "The monkey. It is in your bag. It got in there largely by itself.",
+        looks: "Sitting upright among your things with the air of a paying passenger.",
+        origin: "You picked it up. It had already decided this was happening.",
+        gag: "It is still holding whatever it stole, and still not mentioning it.",
+      },
+    },
   },
   {
     id: "parrot",
@@ -78,6 +107,15 @@ export const SCENE_LOOKABLES: Lookable[] = [
       looks: "Never lands. Flies laps of the hall like it is being paid by the hour.",
       origin: "Belongs to nobody here, which it announces regularly.",
       gag: "It repeats things you said hours ago, slightly wrong, at the worst moment.",
+    },
+    pickup: {
+      look: "a scarlet-red parrot with blue and yellow wing feathers, perched and folded up",
+      canon: {
+        what: "The parrot, perched on your pack. It landed at last, on you.",
+        looks: "Scarlet, wings folded, head tilted like it is about to quote you.",
+        origin: "You picked it out of the air. It seemed as surprised as you were.",
+        gag: "It is still repeating things you said hours ago, still slightly wrong.",
+      },
     },
   },
   {
@@ -151,6 +189,15 @@ export const SCENE_LOOKABLES: Lookable[] = [
       origin: "Already lit when you arrived. All of them were.",
       gag: "Nobody has answered who lit them, and you have stopped asking.",
     },
+    pickup: {
+      look: "a wooden torch with a burning orange flame, held upright",
+      canon: {
+        what: "A torch off the wall. Portable light, finally.",
+        looks: "Pitch-soaked head, flame still leaning towards a draught you cannot find.",
+        origin: "Lifted straight out of its bracket. Nothing collapsed, which was the worry.",
+        gag: "It has not burned down at all since you took it. Not once. Not even slightly.",
+      },
+    },
   },
   {
     id: "vines",
@@ -165,3 +212,21 @@ export const SCENE_LOOKABLES: Lookable[] = [
     },
   },
 ];
+
+
+/**
+ * Does this direction mean "pick that up"?
+ *
+ * Deliberately detected from the Send box rather than given its own button:
+ * Send is the only verb that generates video, and picking something up has to
+ * be seen happening. Typing it keeps that rule intact.
+ */
+export function detectPickup(text: string): Lookable | null {
+  const said = text.toLowerCase();
+  if (!/\b(pick\s*up|pick|take|grab|pocket|collect)\b/.test(said)) return null;
+  return (
+    SCENE_LOOKABLES.find(
+      (l) => l.pickup && (said.includes(l.id) || said.includes(l.label.toLowerCase())),
+    ) ?? null
+  );
+}
