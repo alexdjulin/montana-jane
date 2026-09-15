@@ -10,6 +10,15 @@ a snake, a temple keeper and a merchant for company.
 ## Running it
 
 ```bash
+sh montana-jane.sh
+```
+
+That checks the key, installs dependencies on first run, picks a free port, waits
+for the server and opens the browser. Ctrl-C stops it.
+
+Or by hand:
+
+```bash
 export FAL_KEY=...        # https://fal.ai/dashboard/keys
 cd web
 npm install
