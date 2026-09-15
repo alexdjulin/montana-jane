@@ -1,0 +1,9 @@
+RUNBOOK.md
+slides.pptx
+build-deck.js
+
+__pycache__/
+*.py[oc]
+.venv
+uv.lock
+.DS_Store
