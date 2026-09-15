@@ -64,6 +64,28 @@ export const ITEMS: Item[] = [
     },
   },
   {
+    id: "hoverboard",
+    label: "Hoverboard",
+    look: "a hot-pink hoverboard with a yellow underside and no wheels",
+    canon: {
+      what: "A hot-pink board that hovers. No wheels. Do not ask how.",
+      looks: "Yellow underside, scuffed deck, covered in stickers from places that do not exist yet.",
+      from: "Traded a kid in a car park for it. He seemed in a tremendous hurry.",
+      gag: "It point-blank refuses to hover over water, which she found out the hard way.",
+    },
+  },
+  {
+    id: "cube",
+    label: "Cube",
+    look: "a colourful three-by-three twisting puzzle cube",
+    canon: {
+      what: "A three-by-three twisting puzzle cube. Six colours. One correct state.",
+      looks: "Corner sticker peeling, green face almost done, has been almost done for years.",
+      from: "Airport gift shop, 1987. She has been working on it in transit ever since.",
+      gag: "She has never solved it, and at least one sticker has been relocated by hand.",
+    },
+  },
+  {
     id: "pearl",
     label: "Pearl",
     look: "a large glowing golden pearl",
