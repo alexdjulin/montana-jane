@@ -20,9 +20,15 @@ Montana Jane is an archaeologist in a torchlit jungle temple, with a monkey, a p
 a snake, a temple keeper and a merchant for company.
 
 The opening frame is generated before the stream starts, then pinned as the video's
-exact first frame so there is no cut between the two:
+exact first frame so there is no cut between the two.
 
-![Opening scene](media/opening_scene.png)
+## Screenshots
+
+<p align="center">
+  <a href="media/mj-1.png"><img src="media/mj-1.png" width="49%"></a> <a href="media/mj-2.png"><img src="media/mj-2.png" width="49%"></a>
+  <a href="media/mj-3.png"><img src="media/mj-3.png" width="49%"></a> <a href="media/mj-4.png"><img src="media/mj-4.png" width="49%"></a>
+  <a href="media/mj-5.png"><img src="media/mj-5.png" width="49%"></a> <a href="media/mj-6.png"><img src="media/mj-6.png" width="49%"></a>
+</p>
 
 ## Running it
 
