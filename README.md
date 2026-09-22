@@ -22,6 +22,14 @@ a snake, a temple keeper and a merchant for company.
 The opening frame is generated before the stream starts, then pinned as the video's
 exact first frame so there is no cut between the two.
 
+## Demo
+
+A full session, picking up where the game starts:
+
+<video src="https://github.com/alexdjulin/montana-jane/raw/main/media/mj-demo.mp4" controls muted loop width="100%"></video>
+
+[Download the clip](media/demo.mp4) if it does not play inline.
+
 ## Screenshots
 
 <p align="center">
