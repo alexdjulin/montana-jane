@@ -24,11 +24,9 @@ exact first frame so there is no cut between the two.
 
 ## Demo
 
-A full session, picking up where the game starts:
+A full session, picking up where the game starts. Click to play (3:06):
 
-<video src="https://github.com/alexdjulin/montana-jane/raw/main/media/mj-demo.mp4" controls muted loop width="100%"></video>
-
-[Download the clip](media/mj-demo.mp4) if it does not play inline.
+<a href="media/mj-demo.mp4"><img src="media/mj-demo-poster.png" width="100%"></a>
 
 ## Screenshots
 
