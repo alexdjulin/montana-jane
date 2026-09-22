@@ -239,8 +239,18 @@ form.steer input:disabled { opacity: 0.5; }
 .chip:hover:not(:disabled) { border-style: solid; border-color: var(--torch-dim); color: var(--torch); }
 .chip:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ---- log ------------------------------------------------------------- */
+/* ---- log -------------------------------------------------------------
+   The log must never make the page taller than the game itself. The wrapper
+   is the grid cell and stretches to the left pane's height; the log fills it
+   absolutely, so its own content has no say in how tall the row gets and a
+   long session scrolls inside the box instead of below the fold. */
+.log-pane {
+  position: relative;
+  min-height: 0;
+}
 .log {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -248,7 +258,17 @@ form.steer input:disabled { opacity: 0.5; }
   border-radius: 4px;
   background: var(--panel);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--edge) transparent;
 }
+.log::-webkit-scrollbar { width: 10px; }
+.log::-webkit-scrollbar-track { background: transparent; }
+.log::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  border-radius: 5px;
+  border: 2px solid var(--panel);
+}
+.log::-webkit-scrollbar-thumb:hover { background: #6b5d4c; }
 .log h2 {
   margin: 0;
   padding: 8px 12px;
@@ -283,7 +303,8 @@ form.steer input:disabled { opacity: 0.5; }
   .stage {
     grid-template-columns: minmax(0, 1fr);
   }
-  .log { max-height: 240px; }
+  .log-pane { position: static; }
+  .log { position: static; max-height: 240px; }
 }
 
 @media (max-width: 560px) {

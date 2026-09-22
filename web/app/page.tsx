@@ -127,7 +127,7 @@ export default function Page() {
       minute: "2-digit",
       second: "2-digit",
     });
-    setLog((prev) => [...prev, { id: logIdRef.current++, at, kind, msg }]);
+    setLog((prev) => [{ id: logIdRef.current++, at, kind, msg }, ...prev]);
   }, []);
 
   // Inventory icons are cached server-side, so this is a disk read after the
@@ -186,10 +186,10 @@ export default function Page() {
     }
   }, [musicOn]);
 
-  // keep the log pinned to the newest line
+  // keep the log pinned to the newest line, which is now the first one
   useEffect(() => {
     const box = logBoxRef.current;
-    if (box) box.scrollTop = box.scrollHeight;
+    if (box) box.scrollTop = 0;
   }, [log]);
 
   // credit — polled from the server, which is the only side that sees FAL_KEY.
@@ -903,6 +903,7 @@ export default function Page() {
 
         </div>
 
+      <div className="log-pane">
       <div className="log" ref={logBoxRef}>
         <h2>Session log</h2>
         {log.length === 0 ? (
@@ -917,6 +918,7 @@ export default function Page() {
             ))}
           </ul>
         )}
+      </div>
       </div>
       </div>
     </main>
