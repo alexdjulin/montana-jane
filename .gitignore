@@ -25,3 +25,6 @@ web/public/generated/
 
 # local reference art — copyrighted third-party material, not ours to publish
 design/
+
+# video files (too big)
+*.mp4
