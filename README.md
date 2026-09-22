@@ -28,7 +28,7 @@ A full session, picking up where the game starts:
 
 <video src="https://github.com/alexdjulin/montana-jane/raw/main/media/mj-demo.mp4" controls muted loop width="100%"></video>
 
-[Download the clip](media/demo.mp4) if it does not play inline.
+[Download the clip](media/mj-demo.mp4) if it does not play inline.
 
 ## Screenshots
 
