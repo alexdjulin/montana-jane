@@ -24,9 +24,13 @@ exact first frame so there is no cut between the two.
 
 ## Demo
 
-A full session, picking up where the game starts. Click to play (3:06):
+Here are some demo clips, picking up where the game starts.
 
-<a href="media/mj-demo.mp4"><img src="media/mj-demo-poster.png" width="100%"></a>
+https://github.com/user-attachments/assets/84f69387-82a0-45ff-a71a-ea697b0c77fc
+
+https://github.com/user-attachments/assets/2a879c38-4503-425d-8b15-f87a967af103
+
+https://github.com/user-attachments/assets/a8693978-e1ce-4dfe-9d45-9bbd06feac78
 
 ## Screenshots
 
